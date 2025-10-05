@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "U&I ",
+  title: "U&I Naturals ",
   description: "Being developed by The Pixelated Café",
 };
 
