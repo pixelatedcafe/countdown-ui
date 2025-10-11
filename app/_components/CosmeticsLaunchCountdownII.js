@@ -14,6 +14,7 @@ const CosmeticsLaunchCountdownII = () => {
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [email, setEmail] = useState('');
 
   // Launch date: November 20th, 2025 at 10:00 AM
   const launchDate = new Date('2025-11-20T10:00:00').getTime();
@@ -55,6 +56,16 @@ const CosmeticsLaunchCountdownII = () => {
       clearTimeout(loadTimeout);
     };
   }, [launchDate, isMounted]);
+
+  const handleEmailSubmit = (e) => {
+    e.preventDefault();
+    if (email) {
+      // Handle email submission logic here
+      console.log('Email submitted:', email);
+      alert('Thank you for subscribing! We\'ll notify you about exclusive offers.');
+      setEmail('');
+    }
+  };
 
   // Prevent hydration mismatch by not rendering until mounted
   if (!isMounted) {
@@ -111,7 +122,6 @@ const CosmeticsLaunchCountdownII = () => {
       <div className="max-w-6xl w-full relative z-10">
         {/* Header Section */}
         <div className="text-center mb-8 sm:mb-12">
-
           <div className={`transform transition-all duration-1000 ease-out ${
             isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
@@ -134,20 +144,56 @@ const CosmeticsLaunchCountdownII = () => {
           <TimeUnit value={timeLeft.seconds} label="Seconds" index={3} />
         </div>
 
-        {/* Launch Details */}
-      
-
-        {/* Social Proof Section */}
+        {/* Launch Date Section */}
         <div className={`text-center mt-8 transform transition-all duration-1000 ease-out ${
           isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
         }`} style={{ transitionDelay: '800ms' }}>
-           <p className="text-base sm:text-xl lg:text-2xl text-slate-700 mb-2 font-serif font-light px-4">
+          <p className="text-base sm:text-xl lg:text-2xl text-slate-700 mb-8 font-serif font-light px-4">
             On November 20th, 2025, Save the Date!
-            </p>
-            <div className='pt-10'>
-              <p className='text-slate-700 text-sm'>© 2025 U&I Naturals. All rights reserved.</p> 
-              <p className='text-slate-700 text-sm'>Developed by <Link href="https://thepixelatedcafe.com">The Pixelated Café</Link></p>
+          </p>
+
+          {/* Email Subscription Section */}
+          <div className={`transform transition-all duration-1000 ease-out ${
+            isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`} style={{ transitionDelay: '1000ms' }}>
+            <div className="bg-white/70 backdrop-blur-md rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-blue-100/50 max-w-2xl mx-auto mb-8">
+              <p className="text-lg sm:text-xl font-semibold text-slate-800 mb-2">
+                Registered members enjoy lifetime exclusive offers!
+              </p>
+              <p className="text-sm sm:text-base text-slate-600 mb-6">
+                Register now and get a flat 10% offer on your first order.
+              </p>
+              
+              {/* Email Input Form */}
+              <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-0 max-w-md mx-auto">
+                <div className="flex-1 relative">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email address"
+                    required
+                    className="w-full px-4 py-3 sm:py-4 text-slate-700 bg-white border-2 border-blue-200 rounded-full sm:rounded-r-none sm:rounded-l-full focus:border-blue-500 focus:outline-none transition-colors duration-300 text-sm sm:text-base"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="group relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full sm:rounded-l-none sm:rounded-r-full font-semibold text-sm sm:text-base shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 overflow-hidden whitespace-nowrap"
+                >
+                  <span className="relative z-10">Subscribe Now</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 to-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </button>
+              </form>
             </div>
+          </div>
+
+          {/* Footer Section */}
+          <div className='pt-6'>
+            <p className='text-slate-700 text-sm'>© 2025 U&I Naturals. All rights reserved.</p> 
+            <p className='text-slate-700 text-sm'>
+              Developed by <Link href="https://thepixelatedcafe.com" className="text-blue-600 hover:text-blue-800 transition-colors duration-300 underline">The Pixelated Café</Link>
+            </p>
+          </div>
         </div>
       </div>
 

@@ -8,11 +8,11 @@ import CosmeticsLaunchCountdownV from '../_components/CosmeticsLaunchCountdownV'
 const page = () => {
   return (
     <div>
-      <CosmeticsLaunchCountdown />
+      {/* <CosmeticsLaunchCountdown /> */}
       <CosmeticsLaunchCountdownII />
-      <CosmeticsLaunchCountdownIII />
-      <CosmeticsLaunchCountdownIV />
-      <CosmeticsLaunchCountdownV />
+      {/* <CosmeticsLaunchCountdownIII /> */}
+      {/* <CosmeticsLaunchCountdownIV /> */}
+      {/* <CosmeticsLaunchCountdownV /> */}
     </div>
   )
 }
