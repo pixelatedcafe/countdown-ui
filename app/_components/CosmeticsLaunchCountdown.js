@@ -2,61 +2,132 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { TimeUnit, useCountdownTimer } from './CountdownTimer';
+import Swal from 'sweetalert2';
 
 const CosmeticsLaunchCountdown = () => {
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0
-  });
+  const { timeLeft, isLoaded, isMounted } = useCountdownTimer();
+  const [email, setEmail] = useState('');
 
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const handleEmailSubmit = async (e) => {
+    e.preventDefault();
+    if (email) {
+      try {
+        // Show loading alert
+        Swal.fire({
+          title: 'Processing...',
+          html: 'Please wait while we register you',
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          customClass: {
+            popup: 'font-main',
+            confirmButton: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600'
+          }
+        });
 
-  // Launch date: November 20th, 2025 at 10:00 AM
-  const launchDate = new Date('2025-11-20T10:00:00').getTime();
+        const response = await fetch('/api/send-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        });
 
-  // Handle hydration mismatch by only showing content after mount
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-
-    const calculateTimeLeft = () => {
-      const now = new Date().getTime();
-      const difference = launchDate - now;
-
-      if (difference > 0) {
-        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
-
-        setTimeLeft({ days, hours, minutes, seconds });
-      } else {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        if (response.ok) {
+          console.log('Email sent successfully');
+          
+          // Success Alert with custom styling
+          Swal.fire({
+            title: 'Welcome to U&I Naturals! 🌸',
+            html: `
+              <div style="text-align: center;">
+                <p style="font-size: 16px; color: #64748b; margin-bottom: 12px;">
+                  Thank you for subscribing!
+                </p>
+                <p style="font-size: 14px; color: #94a3b8;">
+                  Check your inbox at <strong style="color: #ec4899;">${email}</strong> for a welcome email.
+                </p>
+                <p style="font-size: 14px; color: #8b5cf6; margin-top: 16px;">
+                  🎁 Enjoy lifetime exclusive offers as a registered member!
+                </p>
+              </div>
+            `,
+            icon: 'success',
+            iconColor: '#ec4899',
+            confirmButtonText: 'Awesome!',
+            confirmButtonColor: '#ec4899',
+            background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%)',
+            backdrop: `
+              rgba(236, 72, 153, 0.1)
+              left top
+              no-repeat
+            `,
+            showClass: {
+              popup: 'animate__animated animate__fadeInDown animate__faster'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp animate__faster'
+            },
+            customClass: {
+              popup: 'font-main rounded-3xl',
+              title: 'text-transparent bg-clip-text bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600',
+              confirmButton: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300'
+            }
+          });
+          
+          setEmail('');
+        } else {
+          const data = await response.json();
+          console.error('Error:', data.message);
+          
+          // Error Alert
+          Swal.fire({
+            title: 'Oops!',
+            html: `
+              <p style="font-size: 16px; color: #64748b;">
+                Failed to subscribe. Please try again later.
+              </p>
+            `,
+            icon: 'error',
+            iconColor: '#ef4444',
+            confirmButtonText: 'Try Again',
+            confirmButtonColor: '#ef4444',
+            background: '#fff',
+            customClass: {
+              popup: 'font-main rounded-3xl',
+              confirmButton: 'px-6 py-3 rounded-2xl font-semibold shadow-lg'
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Error submitting email:', error);
+        
+        // Network Error Alert
+        Swal.fire({
+          title: 'Connection Error',
+          html: `
+            <p style="font-size: 16px; color: #64748b;">
+              An error occurred. Please check your internet connection and try again.
+            </p>
+          `,
+          icon: 'warning',
+          iconColor: '#f59e0b',
+          confirmButtonText: 'Okay',
+          confirmButtonColor: '#f59e0b',
+          background: '#fff',
+          customClass: {
+            popup: 'font-main rounded-3xl',
+            confirmButton: 'px-6 py-3 rounded-2xl font-semibold shadow-lg'
+          }
+        });
       }
-    };
+    }
+  };
 
-    // Calculate initial time immediately
-    calculateTimeLeft();
-
-    const timer = setInterval(calculateTimeLeft, 1000);
-
-    // Animation delay for smooth loading
-    const loadTimeout = setTimeout(() => setIsLoaded(true), 300);
-
-    return () => {
-      clearInterval(timer);
-      clearTimeout(loadTimeout);
-    };
-  }, [launchDate, isMounted]);
-
-  // Prevent hydration mismatch by not rendering until mounted
+  // Handle hydration mismatch
   if (!isMounted) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 flex items-center justify-center">
@@ -72,81 +143,99 @@ const CosmeticsLaunchCountdown = () => {
     );
   }
 
-  const TimeUnit = ({ value, label, index }) => (
-    <div 
-      className={`transform transition-all duration-700 ease-out ${
-        isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-      }`}
-      style={{ transitionDelay: `${index * 150}ms` }}
-    >
-      <div className="relative group">
-        {/* Main time container with gradient background */}
-        <div className="relative bg-gradient-to-br from-rose-400 via-pink-400 to-purple-500 rounded-2xl p-4 sm:p-6 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 min-w-[80px] sm:min-w-[100px] lg:min-w-[120px]">
-          {/* Shimmer effect overlay */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12 animate-shimmer opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl"></div>
-          
-          {/* Glass morphism effect */}
-          <div className="absolute inset-0 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20"></div>
-          
-          {/* Content */}
-          <div className="relative z-10 text-center">
-            <div className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-bold text-white mb-1 sm:mb-2 font-serif">
-              {String(value).padStart(2, '0')}
-            </div>
-            <div className="text-xs sm:text-sm uppercase tracking-wider text-white/90 font-medium">
-              {label}
-            </div>
-          </div>
-          
-          {/* Decorative corner elements */}
-          <div className="absolute top-2 right-2 w-2 h-2 sm:w-3 sm:h-3 bg-white/30 rounded-full"></div>
-          <div className="absolute bottom-2 left-2 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-white/20 rounded-full"></div>
-        </div>
-      </div>
-    </div>
-  );
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50 flex items-center justify-center p-4 relative overflow-hidden">
       <div className="max-w-6xl w-full relative z-10">
         {/* Header Section */}
-        <div className="text-center mb-8 sm:mb-12">
+        <div className="text-center mb-8">
           <div className={`transform transition-all duration-1000 ease-out ${
             isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
           }`}>
-            <Image src="/rose.png" alt="Cosmetics Logo" width={150} height={150} className="mx-auto mb-4" />
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-4 font-serif leading-tight">
-              Handmade with love
+            <Image src="/rose.png" alt="Cosmetics Logo" width={200} height={200} className="mx-auto mb-4" />
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent  font-main">
+              Handmade With Love
             </h1>
-            <p className="text-base sm:text-lg lg:text-xl text-gray-600 mb-2 font-light px-4">
-              Pure organic skincare, launching soon.
+            <p className="text-base sm:text-md lg:text-lg text-gray-600 mb-2 font-light px-4 font-main">
+              Pure Organic Skincare, Launching Soon.
             </p>
             <div className="w-16 sm:w-24 h-1 bg-gradient-to-r from-rose-400 to-purple-500 mx-auto rounded-full"></div>
           </div>
         </div>
 
         {/* Countdown Timer */}
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-6 xl:gap-8 mb-8 sm:mb-12 px-4">
-          <TimeUnit value={timeLeft.days} label="Days" index={0} />
-          <TimeUnit value={timeLeft.hours} label="Hours" index={1} />
-          <TimeUnit value={timeLeft.minutes} label="Minutes" index={2} />
-          <TimeUnit value={timeLeft.seconds} label="Seconds" index={3} />
+        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 lg:gap-6 xl:gap-8 px-4">
+          <TimeUnit value={timeLeft.days} label="Days" index={0} isLoaded={isLoaded} />
+          <TimeUnit value={timeLeft.hours} label="Hours" index={1} isLoaded={isLoaded} />
+          <TimeUnit value={timeLeft.minutes} label="Minutes" index={2} isLoaded={isLoaded} />
+          <TimeUnit value={timeLeft.seconds} label="Seconds" index={3} isLoaded={isLoaded} />
         </div>
 
-        {/* Launch Details */}
-        
-
-        {/* Social Proof Section */}
-        <div className={`text-center mt-8 transform transition-all duration-1000 ease-out ${
-          isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-        }`} style={{ transitionDelay: '800ms' }}>
-          <p className="text-base sm:text-xl lg:text-2xl text-slate-700 mb-2 font-serif font-light px-4">
-            On November 20th, 2025, Save the Date!
+        <div className="flex-1 flex flex-col items-center justify-center mt-6">
+          <div className={`text-center transform transition-all duration-1000 ease-out ${
+            isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+          }`} style={{ transitionDelay: '800ms' }}>
+            <p className="text-base sm:text-lg md:text-xl text-slate-700 font-main font-light px-2 mb-2 sm:mb-3">
+              On November 27th, 2025. Save the Date!
             </p>
-            <div className='pt-10'>
-              <p className='text-slate-700 text-sm'>© 2025 U&I Naturals. All rights reserved.</p> 
-              <p className='text-slate-700 text-sm'>Developed by <Link href="https://thepixelatedcafe.com">The Pixelated Café</Link></p>
-            </div>
+
+            <div className={`transform transition-all duration-1000 ease-out ${
+                isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+              }`} style={{ transitionDelay: '1000ms' }}>
+                <div className="max-w-xl mx-auto px-4">
+                  <p className="text-base sm:text-lg md:text-xl text-slate-700 mb-4 sm:mb-5 font-main font-light px-2">
+                    Registered members enjoy lifetime exclusive offers!
+                  </p>
+                  
+                  {/* Modern Email Box with Glassmorphism Effect */}
+                  <div className="relative group">
+                    {/* Main Form Container */}
+                    <div className="relative bg-white/70 backdrop-blur-md rounded-3xl shadow-xl border border-white/50">
+                      <form onSubmit={handleEmailSubmit}>
+                        {/* Email Input and Button in Same Line */}
+                        <div className="flex flex-col sm:flex-row gap-3">
+                          <div className="relative flex-1">
+                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                              <svg className="h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            </div>
+                            <input
+                              type="email"
+                              value={email}
+                              onChange={(e) => setEmail(e.target.value)}
+                              placeholder="Enter your email"
+                              required
+                              className="w-full pl-12 pr-4 py-3.5 text-slate-700 bg-white/80 border-2 border-transparent rounded-2xl focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-purple-100 transition-all duration-300 text-sm sm:text-base placeholder:text-slate-400 font-main"
+                            />
+                          </div>
+                          
+                          {/* Submit Button with Shimmer Effect */}
+                          <button
+                            type="submit"
+                            className="relative group/btn bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 text-white px-8 py-3.5 rounded-2xl font-semibold text-sm sm:text-base shadow-lg hover:shadow-2xl transform hover:scale-[1.02] transition-all duration-300 overflow-hidden whitespace-nowrap"
+                          >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                              Join Us!
+                              <svg className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                              </svg>
+                            </span>
+                            {/* Shimmer Effect */}
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-1000"></div>
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+        </div>
+
+        {/* Footer Section */}
+        <div className="text-center mt-6">
+          <p className="text-xs text-slate-700">© 2025 U&I Naturals. All rights reserved. | Developed by <Link href="https://thepixelatedcafe.com" className=" hover:text-blue-800 transition-colors font-semibold duration-300">Pixelated</Link></p>
+          
         </div>
       </div>
 
