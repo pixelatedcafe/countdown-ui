@@ -28,9 +28,9 @@ export const metadata = {
   },
   openGraph: {
     title:
-      "U&I Naturals | Handmade Organic Skincare Launching November 27, 2025",
+      "U&I Naturals | Handmade Organic Skincare & Cosmetics",
     description:
-      "Discover U&I Naturals — the upcoming organic skincare and cosmetics brand that blends purity, sustainability, and love. Launching soon with lifetime member offers and exclusive early access.",
+      "Discover U&I Naturals, the upcoming organic skincare and cosmetics brand that blends purity, sustainability, and love. Launching November 27, 2025, with lifetime member offers and exclusive early access.",
     url: "https://www.uandinaturals.com",
     type: "website",
     images: [
