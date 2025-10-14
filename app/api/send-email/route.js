@@ -43,11 +43,10 @@ export async function POST(request) {
       from: '"U&I Admin" <admin@uandinaturals.com>',
       to: '"U&I Naturals" <info@uandinaturals.com>',
       // cc: '"The Pixelated Cafe" <info@thepixelatedcafe.com>',
-      subject: 'New Subscriber Email',
-      text: `A new user has subscribed with the email: ${email}`,
-      html: `<p>A new user has subscribed with the email: <strong>${email}</strong></p>
+      subject: 'New Member Notification',
+      text: `A new member has joined our U&I Naturals family with the email: ${email}`,
+      html: `<p>A new member has joined our U&I Naturals family with the email: <strong>${email}</strong></p>
       <p>Best regards,<br/>U&I Naturals Admin</p>`
-      ,
     });
 
     // Welcome email to the subscriber
