@@ -246,7 +246,7 @@ const CosmeticsLaunchCountdown = () => {
                             <input
                               type="email"
                               value={email}
-                              onChange={(e) => setEmail(e.target.value)}
+                              onChange={(e) => setEmail(e.target.value.toLowerCase())}
                               placeholder="Enter your email"
                               required
                               className="w-full pl-12 pr-4 py-3.5 text-slate-700 bg-white/80 border-2 border-transparent rounded-2xl focus:border-purple-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-purple-100 transition-all duration-300 text-sm sm:text-base placeholder:text-slate-400 font-main"
