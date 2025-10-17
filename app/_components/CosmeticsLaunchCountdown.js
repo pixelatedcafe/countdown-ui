@@ -49,7 +49,7 @@ const CosmeticsLaunchCountdown = () => {
                 <p style="font-size: 16px; color: #64748b; margin-bottom: 12px;">
                   You're already registered with us!
                 </p>
-                <p style="font-size: 16px; color: #64748b;">
+                <p style="font-size: 14px; color: #64748b;">
                   The email <strong style="color: #8b5cf6;">${email}</strong> is already in our exclusive members list.
                 </p>
                 <p style="font-size: 14px; color: #ec4899; margin-top: 16px;">
@@ -62,8 +62,8 @@ const CosmeticsLaunchCountdown = () => {
             confirmButtonText: 'Got It!',
             confirmButtonColor: '#8b5cf6',
             background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%)',
-            backdrop: `
-              rgba(139, 92, 246, 0.1)
+             backdrop: `
+              rgba(236, 72, 153, 0.1)
               left top
               no-repeat
             `,
@@ -88,7 +88,7 @@ const CosmeticsLaunchCountdown = () => {
             html: `
               <div style="text-align: center;">
                 <p style="font-size: 16px; color: #64748b; margin-bottom: 12px;">
-                  Thank you for subscribing!
+                  Thank you for joining us!
                 </p>
                 <p style="font-size: 14px; color: #64748b;">
                   Check your inbox at <strong style="color: #ec4899;">${email}</strong> for a welcome email.
