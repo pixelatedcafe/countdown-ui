@@ -11,35 +11,78 @@ const CosmeticsLaunchCountdown = () => {
   const [email, setEmail] = useState('');
 
   const handleEmailSubmit = async (e) => {
-    e.preventDefault();
-    if (email) {
-      try {
-        // Show loading alert
-        Swal.fire({
-          title: 'Processing...',
-          html: 'Please wait while we register you',
-          allowOutsideClick: false,
-          didOpen: () => {
-            Swal.showLoading();
-          },
-          customClass: {
-            popup: 'font-main',
-            confirmButton: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600'
-          }
-        });
+  e.preventDefault();
+  if (email) {
+    try {
+      // Show loading alert
+      Swal.fire({
+        title: 'Processing...',
+        html: 'Please wait while we register you',
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+        customClass: {
+          popup: 'font-main',
+          confirmButton: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600'
+        }
+      });
 
-        const response = await fetch('/api/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
-        });
+      const response = await fetch('/api/send-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
 
-        if (response.ok) {
+      const data = await response.json();
+
+      if (response.ok) {
+        // Check if user is already registered
+        if (data.message === 'You already registered!') {
+          // Already Registered Alert
+          Swal.fire({
+            title: 'Already An U&I Family Member!',
+            html: `
+              <div style="text-align: center;">
+                <p style="font-size: 16px; color: #64748b; margin-bottom: 12px;">
+                  You're already registered with us!
+                </p>
+                <p style="font-size: 16px; color: #64748b;">
+                  The email <strong style="color: #8b5cf6;">${email}</strong> is already in our exclusive members list.
+                </p>
+                <p style="font-size: 14px; color: #ec4899; margin-top: 16px;">
+                  🎁 Get ready for amazing offers on launch day!
+                </p>
+              </div>
+            `,
+            icon: 'info',
+            iconColor: '#8b5cf6',
+            confirmButtonText: 'Got It!',
+            confirmButtonColor: '#8b5cf6',
+            background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%)',
+            backdrop: `
+              rgba(139, 92, 246, 0.1)
+              left top
+              no-repeat
+            `,
+            showClass: {
+              popup: 'animate__animated animate__bounceIn animate__faster'
+            },
+            hideClass: {
+              popup: 'animate__animated animate__fadeOutUp animate__faster'
+            },
+            customClass: {
+              popup: 'font-main rounded-3xl',
+              title: 'text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600',
+              confirmButton: 'bg-gradient-to-r from-purple-500 via-pink-600 to-rose-600 px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300'
+            }
+          });
+        } else {
+          // New Registration Success Alert
           console.log('Email sent successfully');
           
-          // Success Alert with custom styling
           Swal.fire({
             title: 'Welcome to U&I Naturals! 🌸',
             html: `
@@ -47,7 +90,7 @@ const CosmeticsLaunchCountdown = () => {
                 <p style="font-size: 16px; color: #64748b; margin-bottom: 12px;">
                   Thank you for subscribing!
                 </p>
-                <p style="font-size: 14px; color: #94a3b8;">
+                <p style="font-size: 14px; color: #64748b;">
                   Check your inbox at <strong style="color: #ec4899;">${email}</strong> for a welcome email.
                 </p>
                 <p style="font-size: 14px; color: #8b5cf6; margin-top: 16px;">
@@ -77,46 +120,24 @@ const CosmeticsLaunchCountdown = () => {
               confirmButton: 'bg-gradient-to-r from-rose-500 via-pink-600 to-purple-600 px-6 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300'
             }
           });
-          
-          setEmail('');
-        } else {
-          const data = await response.json();
-          console.error('Error:', data.message);
-          
-          // Error Alert
-          Swal.fire({
-            title: 'Oops!',
-            html: `
-              <p style="font-size: 16px; color: #64748b;">
-                Failed to subscribe. Please try again later.
-              </p>
-            `,
-            icon: 'error',
-            iconColor: '#ef4444',
-            confirmButtonText: 'Try Again',
-            confirmButtonColor: '#ef4444',
-            background: '#fff',
-            customClass: {
-              popup: 'font-main rounded-3xl',
-              confirmButton: 'px-6 py-3 rounded-2xl font-semibold shadow-lg'
-            }
-          });
         }
-      } catch (error) {
-        console.error('Error submitting email:', error);
         
-        // Network Error Alert
+        setEmail('');
+      } else {
+        console.error('Error:', data.message);
+        
+        // Error Alert
         Swal.fire({
-          title: 'Connection Error',
+          title: 'Oops!',
           html: `
             <p style="font-size: 16px; color: #64748b;">
-              An error occurred. Please check your internet connection and try again.
+              Failed to subscribe. Please try again later.
             </p>
           `,
-          icon: 'warning',
-          iconColor: '#f59e0b',
-          confirmButtonText: 'Okay',
-          confirmButtonColor: '#f59e0b',
+          icon: 'error',
+          iconColor: '#ef4444',
+          confirmButtonText: 'Try Again',
+          confirmButtonColor: '#ef4444',
           background: '#fff',
           customClass: {
             popup: 'font-main rounded-3xl',
@@ -124,8 +145,31 @@ const CosmeticsLaunchCountdown = () => {
           }
         });
       }
+    } catch (error) {
+      console.error('Error submitting email:', error);
+      
+      // Network Error Alert
+      Swal.fire({
+        title: 'Connection Error',
+        html: `
+          <p style="font-size: 16px; color: #64748b;">
+            An error occurred. Please check your internet connection and try again.
+          </p>
+        `,
+        icon: 'warning',
+        iconColor: '#f59e0b',
+        confirmButtonText: 'Okay',
+        confirmButtonColor: '#f59e0b',
+        background: '#fff',
+        customClass: {
+          popup: 'font-main rounded-3xl',
+          confirmButton: 'px-6 py-3 rounded-2xl font-semibold shadow-lg'
+        }
+      });
     }
-  };
+  }
+};
+
 
   // Handle hydration mismatch
   if (!isMounted) {
