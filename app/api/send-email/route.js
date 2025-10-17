@@ -9,35 +9,6 @@ const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
-// Async function to send admin notification (fire-and-forget)
-async function sendAdminNotification(email) {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp.zoho.in',
-      port: 465,
-      secure: true,
-      auth: {
-        user: 'admin@uandinaturals.com',
-        pass: process.env.ZOHO_PASSWORD,
-      },
-    });
-
-    await transporter.sendMail({
-      from: '"U&I Admin" <admin@uandinaturals.com>',
-      to: '"U&I Naturals" <info@uandinaturals.com>',
-      subject: 'New Member Notification',
-      text: `A new member has joined our U&I Naturals family with the email: ${email}`,
-      html: `<p>A new member has joined our U&I Naturals family with the email: <strong>${email}</strong></p>
-      <p>Best regards,<br/>U&I Naturals Admin</p>`
-    });
-    
-    console.log('Admin notification sent successfully for:', email);
-  } catch (error) {
-    // Log error but don't throw - this is a background task
-    console.error('Failed to send admin notification:', error);
-  }
-}
-
 export async function POST(request) {
   try {
     const { email } = await request.json();
@@ -80,7 +51,17 @@ export async function POST(request) {
       throw insertError;
     }
 
-    // Send welcome email to user
+    // Create email transporters
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.zoho.in',
+      port: 465,
+      secure: true,
+      auth: {
+        user: 'admin@uandinaturals.com',
+        pass: process.env.ZOHO_PASSWORD,
+      },
+    });
+
     const transporterTwo = nodemailer.createTransport({
       host: 'smtp.zoho.in',
       port: 465,
@@ -91,12 +72,16 @@ export async function POST(request) {
       },
     });
 
-    await transporterTwo.sendMail({
-      from: '"U&I Naturals" <info@uandinaturals.com>',
-      replyTo: 'info@uandinaturals.com',
-      to: email,
-      subject: 'Welcome to the U&I Naturals Family!',
-      text: `Hello ${capUsername},
+    // Send both emails in parallel with Promise.allSettled
+    // This ensures both emails are sent before function terminates (works in Vercel)
+    const [userEmailResult, adminEmailResult] = await Promise.allSettled([
+      // User welcome email (priority)
+      transporterTwo.sendMail({
+        from: '"U&I Naturals" <info@uandinaturals.com>',
+        replyTo: 'info@uandinaturals.com',
+        to: email,
+        subject: 'Welcome to the U&I Naturals Family!',
+        text: `Hello ${capUsername},
 
 We're so happy to have you with us!
 
@@ -114,7 +99,7 @@ Natural care for every You & I
 
 To unsubscribe, reply to this email with "Unsubscribe" or contact us at info@uandinaturals.com.
 `,
-      html: `
+        html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <h6>Hello ${capUsername},</h6>
           <p>We're so happy to have you with us! <span style="font-size: 15px;">❤️</span></p>
@@ -143,21 +128,40 @@ To unsubscribe, reply to this email with "Unsubscribe" or contact us at info@uan
           </p>
         </div>
       `,
-    });
+      }),
+      // Admin notification email
+      transporter.sendMail({
+        from: '"U&I Admin" <admin@uandinaturals.com>',
+        to: '"U&I Naturals" <info@uandinaturals.com>',
+        subject: 'New Member Notification',
+        text: `A new member has joined our U&I Naturals family with the email: ${email}`,
+        html: `<p>A new member has joined our U&I Naturals family with the email: <strong>${email}</strong></p>
+        <p>Best regards,<br/>U&I Naturals Admin</p>`
+      })
+    ]);
 
-    // Send response to client immediately
-    const response = NextResponse.json(
+    // Log results
+    if (userEmailResult.status === 'fulfilled') {
+      console.log('User email sent successfully');
+    } else {
+      console.error('User email failed:', userEmailResult.reason);
+    }
+
+    if (adminEmailResult.status === 'fulfilled') {
+      console.log('Admin notification sent successfully');
+    } else {
+      console.error('Admin notification failed:', adminEmailResult.reason);
+    }
+
+    // Return success if user email was sent (admin email failure is non-critical)
+    if (userEmailResult.status === 'rejected') {
+      throw new Error('Failed to send welcome email');
+    }
+
+    return NextResponse.json(
       { message: 'Email sent successfully' },
       { status: 200 }
     );
-
-    // Send admin notification asynchronously (fire-and-forget)
-    // This won't block the response
-    sendAdminNotification(email).catch(err => {
-      console.error('Background admin notification failed:', err);
-    });
-
-    return response;
 
   } catch (error) {
     console.error('Error sending email:', error);
