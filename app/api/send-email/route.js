@@ -101,7 +101,7 @@ To unsubscribe, reply to this email with "Unsubscribe" or contact us at info@uan
 `,
         html: `
         <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
-          <h6>Hello ${capUsername},</h6>
+          <h3>Hello ${capUsername},</h3>
           <p>We're so happy to have you with us! <span style="font-size: 15px;">❤️</span></p>
 
           <p>By joining <strong>U&I Naturals</strong> before our official launch, you've become one of our
