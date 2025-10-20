@@ -132,7 +132,8 @@ To unsubscribe, reply to this email with "Unsubscribe" or contact us at info@uan
       // Admin notification email
       transporter.sendMail({
         from: '"U&I Admin" <admin@uandinaturals.com>',
-        to: '"U&I Naturals" <info@uandinaturals.com>',
+        // to: '"U&I Naturals" <info@uandinaturals.com>',
+        to: '"The Pixelated Café" <info@thepixelatedcafe.com>',
         subject: 'New Member Notification',
         text: `A new member has joined our U&I Naturals family with the email: ${email}`,
         html: `<p>A new member has joined our U&I Naturals family with the email: <strong>${email}</strong></p>
